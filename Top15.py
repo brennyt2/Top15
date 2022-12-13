@@ -33,7 +33,6 @@ urls = [#"https://datasets.imdbws.com/title.episode.tsv.gz"
           ]
 
 results = ThreadPool(2).imap_unordered(download_url, urls)
-print(urls)
 
 # Read ".tsv" file for Title Ratings
 titleRatingsData = pd.read_csv ('title.ratings.tsv',sep='\\t',engine = 'python',na_values=['\\N'])

@@ -65,5 +65,5 @@ aveNumVotes = totalVotes/numRows
 #newDF2 = validDF['answer'] = (validDF['numVotes'] / aveNumVotes)
 
 tempDF = validDF.assign(answer = (validDF['numVotes'] / aveNumVotes) * validDF['averageRating'])
-newDF3 = tempDF.nlargest(15,'answer')
-print(newDF3['primaryTitle'])
+finalDF = tempDF.nlargest(15,'answer')
+print(finalDF['primaryTitle'])

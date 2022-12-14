@@ -14,7 +14,6 @@ def download_url(url):
     urlrtv = request.urlretrieve(url=url, filename=file_title)
    
     # for ".tsv" to ".csv"
-    #title = re.split(pattern=r'\.tsv', string=file_title)[0] +".tsv"
     title = re.split(pattern=r'\.tsv', string=file_title)[0] +".tsv"
     
     # Unzip ".gz" file
@@ -34,35 +33,28 @@ urls = [#"https://datasets.imdbws.com/title.episode.tsv.gz"
 
 results = ThreadPool(2).imap_unordered(download_url, urls)
 
-# Read ".tsv" file for Title Ratings
+# Read ".tsv" file for Title Ratings into DataFrame
 titleRatingsData = pd.read_csv ('title.ratings.tsv',sep='\\t',engine = 'python',na_values=['\\N'])
 
-#print(title_ratings_data)
-#title_ratings = pd.DataFrame(title_ratings_data, columns= ['tconst','averageRating','numVotes'])
-#print(title_ratings)
-
-# Read ".tsv" file for Title Basics
+# Read ".tsv" file for Title Basics into DataFrame
 titleBasicsData = pd.read_csv ('title.basics.tsv',chunksize=100000, sep='\\t',engine = 'python',na_values=['\\N'], usecols = ['tconst', 'titleType', 'primaryTitle'])
 chunkBasicsData = pd.concat(titleBasicsData)
 
+#Filter on only movies
 dfMovie = chunkBasicsData.query("titleType == 'movie'")
-#print("Line 51: ",df2)
-mergedDF = pd.merge(titleRatingsData, dfMovie, on='tconst')
-#print(newDF)
-#print(newDF['numVotes'] >= 100)
-validDF = mergedDF.query('numVotes >= 100')
-#print(validDF)
 
+#Merge DataFrames
+mergedDF = pd.merge(titleRatingsData, dfMovie, on='tconst')
+#print(mergedDF)
+
+#Create new DataFrame with list of movies with 100 or more votes
+validDF = mergedDF.query('numVotes >= 100')
+
+#Calculate average number of votes
 totalVotes = mergedDF['numVotes'].sum()
 #print(totalVotes)
 numRows = len(validDF)
 aveNumVotes = totalVotes/numRows
-
-#print("Total votes: ",totalVotes)
-#print("NumRows: ",numRows)
-#print("Average NumVotes: ",aveNumVotes)
-#validDF['answer'] = validDF('numVotes') / validDF()
-#newDF2 = validDF['answer'] = (validDF['numVotes'] / aveNumVotes)
 
 tempDF = validDF.assign(answer = (validDF['numVotes'] / aveNumVotes) * validDF['averageRating'])
 finalDF = tempDF.nlargest(15,'answer')
